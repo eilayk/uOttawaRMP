@@ -134,7 +134,7 @@ chrome.runtime.onConnect.addListener((port) => {
 chrome.runtime.onMessage.addListener(
   function (request, sender) {
     if (request.active) {
-      browser.pageAction.show(sender.tab.id);
+      chrome.pageAction.show(sender.tab.id);
 
       // if pageAction is clicked, send message to content.js
       chrome.pageAction.onClicked.addListener(function () {
