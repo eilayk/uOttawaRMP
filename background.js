@@ -4,7 +4,7 @@
 // The background script is necessary because the website is not allowed to make requests to RMP
 // due to CORS restrictions.
 
-const {GraphQLClient, gql} = require('graphql-request');
+const { GraphQLClient, gql } = require('graphql-request');
 
 // GraphQL queries to get the professor's info from RMP
 const searchProfessorQuery = gql`
@@ -81,7 +81,7 @@ const searchProfessor = async (name, schoolID) => {
 };
 
 const getProfessor = async (id) => {
-  const response = await client.request(getProfessorQuery, {id});
+  const response = await client.request(getProfessorQuery, { id });
   return response.node;
 };
 
@@ -112,6 +112,7 @@ async function sendProfessorInfo(professorName) {
     return { error: "Professor not found" };
   }
 
+
   const professorID = professors[0].id;
   const professor = await getProfessor(professorID);
   return professor;
@@ -124,6 +125,22 @@ chrome.runtime.onConnect.addListener((port) => {
     }).catch((error) => {
       console.log('Error:', error);
       port.postMessage({ error });
+      port.postMessage({ error });
     });
   });
 });
+
+// if content script is loaded, show PageAction
+chrome.runtime.onMessage.addListener(
+  function (request, sender) {
+    if (request.active) {
+      browser.pageAction.show(sender.tab.id);
+
+      // if pageAction is clicked, send message to content.js
+      chrome.pageAction.onClicked.addListener(function () {
+        chrome.tabs.sendMessage(sender.tab.id, { "clicked": true });
+      });
+
+    }
+  }
+);

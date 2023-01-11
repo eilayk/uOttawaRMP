@@ -2,60 +2,30 @@
 // It sends a message to the background script to retrieve the professor's info from RMP.
 // The background script then sends the info back to this script, which inserts it into the page.
 
-// select iframe that displays class info
-const iframe = document.querySelector('iframe').contentWindow.document;
 
-// css mostly for vsb tooltip and fixing vsb nasty css
-const style = document.createElement("style");
-style.innerHTML = `
-  .rating {
-    margin-top: 7px;
-  }
-  .vsb-rating {
-    margin-top: 5px;
-  }
-  .prof-tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    z-index: 9999;
-  }
-  .prof-tooltip .tooltip-text {
-    visibility: hidden;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 4px;
-    padding: 5px;
-    position: absolute;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.3s;
-    width: 200px;
-    pointer-events: none;
-    left: -200px;
-    top: -50px;
-  }
-  .prof-tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .rightnclear {
-    float: inherit;
-    clear: both;
-  }
-`;
+// when content script is loaded, send message to background script to activate pageaction prompt.
+chrome.runtime.sendMessage({ "active": true });
 
-iframe.head.appendChild(style);
 function Search() {
+  // select iframe that displays class info
+  const iframe = document.querySelector('iframe').contentWindow.document;
+
+  // css to add space between prof name and rating
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .rating {
+      margin-top: 7px;
+    }
+  `;
+  iframe.head.appendChild(style);
+
   const professorLinks = [];
   let i = 0;
   let prevProf = "";
 
   // if viewing in schedule
   let currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
-  console.log(currElement);
+
   while (currElement != null) {
     if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
       professorLinks.push(currElement);
@@ -64,7 +34,7 @@ function Search() {
     i++;
     currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
   }
-  
+
   // if viewing in course selector
   currElement = iframe.getElementById("MTG_INSTR$" + i.toString());
   while (currElement != null) {
@@ -115,10 +85,13 @@ function Search() {
   });
 }
 
-// execute extension when icon is clicked
-chrome.browserAction.onClicked.addListener(function(tab) {
-  Search();
-});
+// perform search when icon is clicked
+chrome.runtime.onMessage.addListener(
+  function (request, sender) {
+    if (request.clicked) {
+      Search();
+    }
+  });
 
 // helper functions to insert the professor's info into the page
 
