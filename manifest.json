@@ -10,6 +10,10 @@
   "background": {
     "scripts": ["background-packed.js"]
   },
+  "page_action" : {
+    "default_icon": "assets/icon128.png",
+    "default_title": "Search RateMyProf"
+  },
   "content_scripts": [
     {
       "matches": ["*://*.uocampus.uottawa.ca/psp/*"],
