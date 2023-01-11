@@ -1,19 +1,20 @@
 {
   "manifest_version": 2,
-  "name": "YorkRMP",
-  "description": "RMP extension for YorkU's course page.",
+  "name": "uOttawaRMP",
+  "description": "RMP extension for uOttawa's course page.",
   "version": "1.0.1",
   "icons": { "128": "assets/icon128.png" },
   "permissions": [
-    "activeTab", "webRequest", "https://w2prod.sis.yorku.ca/*", "https://www.ratemyprofessors.com/*"
+    "activeTab", "webRequest", "*://*.uocampus.uottawa.ca/psp/*", "https://www.ratemyprofessors.com/*"
   ],
   "background": {
     "scripts": ["background-packed.js"]
   },
   "content_scripts": [
     {
-      "matches": ["https://w2prod.sis.yorku.ca/*"],
-      "js": ["content.js"]
+      "matches": ["*://*.uocampus.uottawa.ca/psp/*"],
+      "js": ["content.js"],
+      "all_frames": true
     }
   ]
 }
