@@ -1,104 +1,88 @@
-// use self hosted proxy to get around CORS restrictions
-const PROXY_URL = 'https://www.ratemyprofessors.com/graphql';
-const AUTH_TOKEN = 'dGVzdDp0ZXN0';
-const BUG_REPORT_URL = 'https://github.com/mahfoozm/YorkURMP/issues/new/choose';
+// This file is responsible for handling the communication between the extension and the website
+// It sends a message to the background script to retrieve the professor's info from RMP
+// The background script then sends the info back to this script, which inserts it into the page
+// The background script is necessary because the website is not allowed to make requests to RMP
+// due to CORS restrictions.
 
-// currently searching for profs at:
-// YorkU (Keele and Glendon), TMU, and UofT (SG)
-const SCHOOL_IDS = [
-  "U2Nob29sLTE0OTU=",
-  "U2Nob29sLTEyMTI1",
-  "U2Nob29sLTE0NzE=",
-  "U2Nob29sLTE0ODQ=",
-];
+const {GraphQLClient, gql} = require('graphql-request');
 
-const checkProxyReachability = async () => {
-  try {
-    const response = await fetch(PROXY_URL, { method: 'HEAD' });
-    return response.ok;
-  } catch (error) {
-    return false;
-  }
-};
-
-const searchProfessor = async (name, schoolIDs) => {
-  for (const schoolID of schoolIDs) {
-    const response = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${AUTH_TOKEN}`,
-      },
-      body: JSON.stringify({
-        query: `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
-          newSearch {
-            teachers(query: {text: $text, schoolID: $schoolID}) {
-              edges {
-                cursor
-                node {
-                  id
-                  firstName
-                  lastName
-                  school {
-                    name
-                    id
-                  }
-                }
-              }
-            }
+// GraphQL queries to get the professor's info from RMP
+const searchProfessorQuery = gql`
+query NewSearchTeachersQuery($text: String!, $schoolID: ID!)
+{
+  newSearch {
+    teachers(query: {text: $text, schoolID: $schoolID}) {
+      edges {
+        cursor
+        node {
+          id
+          firstName
+          lastName
+          school {
+            name
+            id
           }
-        }`,
-        variables: {
-          text: name,
-          schoolID,
-        },
-      }),
-    });
-    const json = await response.json();
-    if (json.data.newSearch.teachers.edges.length > 0) {
-      return json.data.newSearch.teachers.edges.map((edge) => edge.node);
+        }
+      }
     }
   }
-  return [];
+}
+`;
+
+
+const getProfessorQuery = gql`
+query TeacherRatingsPageQuery(
+  $id: ID!
+) {
+  node(id: $id) {
+    ... on Teacher {
+      id
+      firstName
+      lastName
+      school {
+        name
+        id
+        city
+        state
+      }
+      avgDifficulty
+      avgRating
+      department
+      numRatings
+      legacyId
+      wouldTakeAgainPercent
+    }
+    id
+  }
+}
+`;
+
+// publicly available token, uOttawa school ID
+const AUTH_TOKEN = 'dGVzdDp0ZXN0';
+const SCHOOL_ID = 'U2Nob29sLTE0NTI=';
+
+const client = new GraphQLClient('https://www.ratemyprofessors.com/graphql', {
+  headers: {
+    authorization: `Basic ${AUTH_TOKEN}`
+  }
+});
+
+const searchProfessor = async (name, schoolID) => {
+  const response = await client.request(searchProfessorQuery, {
+    text: name,
+    schoolID
+  });
+
+  if (response.newSearch.teachers === null) {
+    return [];
+  }
+
+  return response.newSearch.teachers.edges.map((edge) => edge.node);
 };
 
 const getProfessor = async (id) => {
-  const response = await fetch(PROXY_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Basic ${AUTH_TOKEN}`,
-    },
-    body: JSON.stringify({
-      query: `query TeacherRatingsPageQuery($id: ID!) {
-        node(id: $id) {
-          ... on Teacher {
-            id
-            firstName
-            lastName
-            school {
-              name
-              id
-              city
-              state
-            }
-            avgDifficulty
-            avgRating
-            department
-            numRatings
-            legacyId
-            wouldTakeAgainPercent
-          }
-          id
-        }
-      }`,
-      variables: {
-        id,
-      },
-    }),
-  });
-  const json = await response.json();
-  return json.data.node;
+  const response = await client.request(getProfessorQuery, {id});
+  return response.node;
 };
 
 async function sendProfessorInfo(professorName) {
