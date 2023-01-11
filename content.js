@@ -2,6 +2,9 @@
 // It sends a message to the background script to retrieve the professor's info from RMP.
 // The background script then sends the info back to this script, which inserts it into the page.
 
+// select iframe that displays class info
+const iframe = document.querySelector('iframe').contentWindow.document;
+
 // css to add space between prof name and rating
 const style = document.createElement('style');
 style.innerHTML = `
@@ -10,44 +13,77 @@ style.innerHTML = `
   }
 `;
 
-document.head.appendChild(style);
-const professorLinks = document.querySelectorAll('td[width="15%"] a');
-professorLinks.forEach(async (link) => {
-  const professorName = link.textContent;
+iframe.head.appendChild(style);
+function Search() {
+  const professorLinks = [];
+  let i = 0;
+  let prevProf = "";
 
-  try {
-    const port = chrome.runtime.connect({name: 'professor-rating'});
-    port.postMessage({professorName});
-    port.onMessage.addListener((teacher) => {
-
-      // If the professor is not registered on RMP, the background script will return an error message
-      if (teacher.error) {
-        insertNoProfError(link);
-      } else {
-        // get the professor's info from the response
-        const avgRating = teacher.avgRating;
-        const numRatings = teacher.numRatings;
-        const avgDifficulty = teacher.avgDifficulty;
-        const wouldTakeAgainPercent = parseInt(teacher.wouldTakeAgainPercent);
-        const legacyId = teacher.legacyId;
-
-        // if the professor has no ratings, RMP will return -1 for this field
-        if (wouldTakeAgainPercent === -1) {
-          insertNoRatingsError(link, legacyId);
-          return;
-        }
-
-      // insert the professor's info into the page
-      insertNumRatings(link, numRatings, legacyId);
-      insertWouldTakeAgainPercent(link, wouldTakeAgainPercent);
-      insertAvgDifficulty(link, avgDifficulty);
-      insertRating(link, avgRating);
+  // if viewing in schedule
+  let currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
+  console.log(currElement);
+  while (currElement != null) {
+    if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
+      professorLinks.push(currElement);
+      prevProf = currElement.textContent;
     }
-    });
-  } catch (error) {
-    // insert an error message if the request fails
-    insertNoProfError(link);
+    i++;
+    currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
   }
+  
+  // if viewing in course selector
+  currElement = iframe.getElementById("MTG_INSTR$" + i.toString());
+  while (currElement != null) {
+    if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
+      professorLinks.push(currElement);
+      prevProf = currElement.textContent;
+    }
+    i++;
+    currElement = iframe.getElementById("MTG_INSTR$" + i.toString());
+  }
+
+  professorLinks.forEach(async (link) => {
+    const professorName = link.textContent;
+
+    try {
+      const port = chrome.runtime.connect({ name: 'professor-rating' });
+      port.postMessage({ professorName });
+      port.onMessage.addListener((teacher) => {
+
+        // If the professor is not registered on RMP, the background script will return an error message
+        if (teacher.error) {
+          insertNoProfError(link);
+        } else {
+          // get the professor's info from the response
+          const avgRating = teacher.avgRating;
+          const numRatings = teacher.numRatings;
+          const avgDifficulty = teacher.avgDifficulty;
+          const wouldTakeAgainPercent = parseInt(teacher.wouldTakeAgainPercent);
+          const legacyId = teacher.legacyId;
+
+          // if the professor has no ratings, RMP will return -1 for this field
+          if (wouldTakeAgainPercent === -1) {
+            insertNoRatingsError(link, legacyId);
+            return;
+          }
+
+          // insert the professor's info into the page
+          insertNumRatings(link, numRatings, legacyId);
+          insertWouldTakeAgainPercent(link, wouldTakeAgainPercent);
+          insertAvgDifficulty(link, avgDifficulty);
+          insertRating(link, avgRating);
+        }
+      });
+    } catch (error) {
+      // insert an error message if the request fails
+      insertNoProfError(link);
+    }
+  });
+}
+
+// execute extension when icon is clicked
+chrome.browserAction.onClicked.addListener(function(tab) {
+  Search();
 });
 
 // helper functions to insert the professor's info into the page

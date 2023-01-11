@@ -57,9 +57,9 @@ query TeacherRatingsPageQuery(
 }
 `;
 
-// publicly available token, yorkU school ID
+// publicly available token, uOttawa school ID
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
-const SCHOOL_ID = 'U2Nob29sLTE0OTU=';
+const SCHOOL_ID = 'U2Nob29sLTE0NTI=';
 
 const client = new GraphQLClient('https://www.ratemyprofessors.com/graphql', {
   headers: {
