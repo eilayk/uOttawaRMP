@@ -1,25 +1,12 @@
-// use self hosted proxy to get around CORS restrictions
 const PROXY_URL = 'https://www.ratemyprofessors.com/graphql';
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
-const BUG_REPORT_URL = 'https://github.com/mahfoozm/YorkURMP/issues/new/choose';
 
-// currently searching for profs at:
-// YorkU (Keele and Glendon), TMU, and UofT (SG)
+// Search for profs at uOttawa
 const SCHOOL_IDS = [
-  "U2Nob29sLTE0OTU=",
-  "U2Nob29sLTEyMTI1",
-  "U2Nob29sLTE0NzE=",
-  "U2Nob29sLTE0ODQ=",
+  "U2Nob29sLTE0NTI=",
 ];
 
-const checkProxyReachability = async () => {
-  try {
-    const response = await fetch(PROXY_URL, { method: 'HEAD' });
-    return response.ok;
-  } catch (error) {
-    return false;
-  }
-};
+// TODO: explore proxy reachability
 
 const searchProfessor = async (name, schoolIDs) => {
   for (const schoolID of schoolIDs) {
@@ -102,11 +89,6 @@ const getProfessor = async (id) => {
 };
 
 async function sendProfessorInfo(professorName) {
-  const isProxyReachable = await checkProxyReachability();
-  if (!isProxyReachable) {
-    return { error: `Can't connect to the proxy server, please bug me <a href="${BUG_REPORT_URL}" target="_blank">here</a>.` };
-  }
-
   const normalizedName = professorName.normalize("NFKD");
   const professors = await searchProfessor(normalizedName, SCHOOL_IDS);
 
