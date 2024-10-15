@@ -11,9 +11,15 @@
   ],
   "optional_permissions": ["webNavigation", "tabs"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
   },
   "icons": {
     "128": "assets/icon128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ekats055@uottawa.ca"
+    }
   }
 }
