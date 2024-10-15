@@ -1,0 +1,15 @@
+{
+"actions": {
+    "default_icon": "assets/icon128.png",
+    "default_title": "Search RateMyProf"
+  },
+"icons": { "128": "assets/icon128.png" },
+
+"content_scripts": [
+  {
+    "matches": ["*://*.uocampus.uottawa.ca/psp/*"],
+    "js": ["content.js"],
+    "all_frames": true
+  }
+]
+}

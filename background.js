@@ -1,5 +1,57 @@
+// Listen for extension click
+chrome.action.onClicked.addListener(tab => {
+  // execute content script
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['content.js']
+  })
+}); 
+
 const PROXY_URL = 'https://www.ratemyprofessors.com/graphql';
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
+const HEADERS = {
+  "Content-Type": "application/json",
+  Authorization: `Basic ${AUTH_TOKEN}`,
+  "Sec-Fetch-Dest": "empty",
+  "Sec-Fetch-Mode": "cors",
+  "Sec-Fetch-Site": "same-origin",
+}
+
+fetch('https://www.ratemyprofessors.com/graphql', {
+  method: 'POST',
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Basic dGVzdDp0ZXN0",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+  },
+  body: JSON.stringify({
+    query: `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
+      newSearch {
+        teachers(query: {text: $text, schoolID: $schoolID}) {
+          edges {
+            cursor
+            node {
+              id
+              firstName
+              lastName
+              school {
+                name
+                id
+              }
+            }
+          }
+        }
+      }
+    }`,
+    mode: "cors",
+    variables: {
+      text: "Andrew",
+      schoolID: "U2Nob29sLTE0NTI=",
+    },
+  })
+});
 
 // Search for profs at uOttawa
 const SCHOOL_IDS = [
@@ -7,15 +59,20 @@ const SCHOOL_IDS = [
 ];
 
 // TODO: explore proxy reachability
+const checkProxyReachability = async () => {
+  try {
+    const response = await fetch(PROXY_URL, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+};
 
 const searchProfessor = async (name, schoolIDs) => {
   for (const schoolID of schoolIDs) {
     const response = await fetch(PROXY_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${AUTH_TOKEN}`,
-      },
+      headers: HEADERS,
       body: JSON.stringify({
         query: `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
           newSearch {
@@ -52,10 +109,7 @@ const searchProfessor = async (name, schoolIDs) => {
 const getProfessor = async (id) => {
   const response = await fetch(PROXY_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Basic ${AUTH_TOKEN}`,
-    },
+    headers: HEADERS,
     body: JSON.stringify({
       query: `query TeacherRatingsPageQuery($id: ID!) {
         node(id: $id) {
@@ -125,3 +179,9 @@ chrome.runtime.onConnect.addListener((port) => {
     });
   });
 });
+
+// chrome.runtime.onConnect.addListener(port => {
+//   port.onMessage.addListener(request => {
+//     console.log(request);
+//   });
+// });

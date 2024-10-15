@@ -2,6 +2,8 @@
 // It sends a message to the background script to retrieve the professor's info from RMP.
 // The background script then sends the info back to this script, which inserts it into the page.
 
+// run this function when triggered by action
+// function performSearch() {
 // select iframe that displays class info
 const iframe = document.querySelector('iframe').contentWindow.document;
 
@@ -21,11 +23,11 @@ populateProfessors(iframe, "MTG_INSTR$");
 
 function populateProfessors(parent, id) {
   // TODO: cache professors to avoid multiple requests
-  const count = 0;
+  let count = 0;
 
   let currElement = parent.getElementById(id + count.toString());
   while (currElement != null) {
-    if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
+    if (currElement.textContent != 'Staff') {
       handleProfessorInfo(currElement, currElement.textContent);
     }
     count++;
@@ -43,7 +45,7 @@ async function handleProfessorInfo(element, professorName) {
     port.postMessage({ professorName });
     port.onMessage.addListener((teacher) => {
       if (teacher.error) {
-        insertNoProfError(link);
+        insertNoProfError(element);
       } else {
         // get the professor's info from the response
         const avgRating = teacher.avgRating;
@@ -54,7 +56,7 @@ async function handleProfessorInfo(element, professorName) {
 
         // if the professor has no ratings, RMP will return -1 for this field
         if (wouldTakeAgainPercent === -1) {
-          insertNoRatingsError(link, legacyId);
+          insertNoRatingsError(element, legacyId);
           return;
         }
 
