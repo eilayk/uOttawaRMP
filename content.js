@@ -2,99 +2,78 @@
 // It sends a message to the background script to retrieve the professor's info from RMP.
 // The background script then sends the info back to this script, which inserts it into the page.
 
+// run this function when triggered by action
+// function performSearch() {
+// select iframe that displays class info
+const iframe = document.querySelector('iframe').contentWindow.document;
 
-// when content script is loaded, send message to background script to activate pageaction prompt.
-chrome.runtime.sendMessage({ "active": true });
-
-function Search() {
-  // select iframe that displays class info
-  const iframe = document.querySelector('iframe').contentWindow.document;
-
-  // css to add space between prof name and rating
-  const style = document.createElement('style');
-  style.innerHTML = `
-    .rating {
-      margin-top: 7px;
-    }
-  `;
-  iframe.head.appendChild(style);
-
-  const professorLinks = [];
-  let i = 0;
-  let prevProf = "";
-
-  // if viewing in schedule
-  let currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
-
-  while (currElement != null) {
-    if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
-      professorLinks.push(currElement);
-      prevProf = currElement.textContent;
-    }
-    i++;
-    currElement = iframe.getElementById("DERIVED_CLS_DTL_SSR_INSTR_LONG$" + i.toString());
+// css to add space between prof name and rating
+const style = document.createElement('style');
+style.innerHTML = `
+  .rating {
+    margin-top: 7px;
   }
+`;
+iframe.head.appendChild(style);
 
-  // if viewing in course selector
-  currElement = iframe.getElementById("MTG_INSTR$" + i.toString());
+// if viewing in schedule
+populateProfessors(iframe, "DERIVED_CLS_DTL_SSR_INSTR_LONG$");
+// if viewing in course selector
+populateProfessors(iframe, "MTG_INSTR$");
+
+function populateProfessors(parent, id) {
+  // TODO: cache professors to avoid multiple requests
+  let count = 0;
+
+  let currElement = parent.getElementById(id + count.toString());
   while (currElement != null) {
-    if (currElement.textContent != 'Staff' && currElement.textContent != prevProf) {
-      professorLinks.push(currElement);
-      prevProf = currElement.textContent;
+    if (currElement.textContent != 'Staff') {
+      handleProfessorInfo(currElement, currElement.textContent);
     }
-    i++;
-    currElement = iframe.getElementById("MTG_INSTR$" + i.toString());
+    count++;
+    currElement = iframe.getElementById(id + count.toString());
   }
-
-  professorLinks.forEach(async (link) => {
-    const professorName = link.textContent;
-
-    try {
-      const port = chrome.runtime.connect({ name: 'professor-rating' });
-      port.postMessage({ professorName });
-      port.onMessage.addListener((teacher) => {
-
-        // If the professor is not registered on RMP, the background script will return an error message
-        if (teacher.error) {
-          insertNoProfError(link);
-        } else {
-          // get the professor's info from the response
-          const avgRating = teacher.avgRating;
-          const numRatings = teacher.numRatings;
-          const avgDifficulty = teacher.avgDifficulty;
-          const wouldTakeAgainPercent = parseInt(teacher.wouldTakeAgainPercent);
-          const legacyId = teacher.legacyId;
-
-          // if the professor has no ratings, RMP will return -1 for this field
-          if (wouldTakeAgainPercent === -1) {
-            insertNoRatingsError(link, legacyId);
-            return;
-          }
-
-          // insert the professor's info into the page
-          insertNumRatings(link, numRatings, legacyId);
-          insertWouldTakeAgainPercent(link, wouldTakeAgainPercent);
-          insertAvgDifficulty(link, avgDifficulty);
-          insertRating(link, avgRating);
-        }
-      });
-    } catch (error) {
-      // insert an error message if the request fails
-      insertNoProfError(link);
-    }
-  });
 }
 
-// perform search when icon is clicked
-chrome.runtime.onMessage.addListener(
-  function (request, sender) {
-    if (request.clicked) {
-      Search();
-    }
+async function handleProfessorInfo(element, professorName) {
+  if (!/[a-zA-Z]/.test(professorName)) {
+    return;
+  }
+
+  try {
+    const port = chrome.runtime.connect({ name: "professor-rating" });
+    port.postMessage({ professorName });
+    port.onMessage.addListener((teacher) => {
+      if (teacher.error) {
+        insertNoProfError(element);
+      } else {
+        // get the professor's info from the response
+        const avgRating = teacher.avgRating;
+        const numRatings = teacher.numRatings;
+        const avgDifficulty = teacher.avgDifficulty;
+        const wouldTakeAgainPercent = parseInt(teacher.wouldTakeAgainPercent);
+        const legacyId = teacher.legacyId;
+
+        // if the professor has no ratings, RMP will return -1 for this field
+        if (wouldTakeAgainPercent === -1) {
+          insertNoRatingsError(element, legacyId);
+          return;
+        }
+
+        // insert the professor's info into the page
+        insertNumRatings(element, numRatings, legacyId);
+        insertWouldTakeAgainPercent(element, wouldTakeAgainPercent);
+        insertAvgDifficulty(element, avgDifficulty);
+        insertRating(element, avgRating);
+      }
   });
+}  catch (error) {
+    // insert an error message if the request fails
+    insertNoProfError(link);
+  }
+}
 
 // helper functions to insert the professor's info into the page
-
 function insertRating(link, avgRating) {
   link.insertAdjacentHTML(
     "afterend",

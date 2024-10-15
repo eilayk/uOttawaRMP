@@ -16,5 +16,3 @@ The extension icon will show up in the browser toolbar when navigating uOttawa's
 Currently, the extension will display the professors RMP rating, avg difficulty, percentage of students that would take again, and num of ratings with a hyperlink to the prof's RMP page.
 
 ![Normal response](https://i.imgur.com/TplbWX7.png)
-
-This extension can only be added as an unpacked extension (on chrome) for the time being, as it needs to be converted from MV2 to MV3 to be uploaded on the Chrome Web Store. See the releases tab for an easier download & installation instructions. 

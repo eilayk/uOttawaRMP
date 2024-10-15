@@ -1,24 +1,20 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "uOttawaRMP",
   "description": "RMP extension for uOttawa's course page.",
-  "version": "1.0.1",
-  "icons": { "128": "assets/icon128.png" },
-  "permissions": [
-    "activeTab", "webRequest", "*://*.uocampus.uottawa.ca/psp/*", "https://www.ratemyprofessors.com/*"
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "page_action" : {
-    "default_icon": "assets/icon128.png",
+  "version": "1.1.0",
+  "action": {
     "default_title": "Search RateMyProf"
   },
-  "content_scripts": [
-    {
-      "matches": ["*://*.uocampus.uottawa.ca/psp/*"],
-      "js": ["content.js"],
-      "all_frames": true
-    }
-  ]
+  "permissions": [
+    "activeTab", "scripting"
+  ],
+  "optional_permissions": ["webNavigation", "tabs"],
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
+  "icons": {
+    "128": "assets/icon128.png"
+  }
 }

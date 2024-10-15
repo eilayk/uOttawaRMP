@@ -1,96 +1,103 @@
-// This file is responsible for handling the communication between the extension and the website
-// It sends a message to the background script to retrieve the professor's info from RMP
-// The background script then sends the info back to this script, which inserts it into the page
-// The background script is necessary because the website is not allowed to make requests to RMP
-// due to CORS restrictions.
+// Listen for extension click
+chrome.action.onClicked.addListener(tab => {
+  // execute content script
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['content.js']
+  })
+}); 
 
-const { GraphQLClient, gql } = require('graphql-request');
-
-// GraphQL queries to get the professor's info from RMP
-const searchProfessorQuery = gql`
-query NewSearchTeachersQuery($text: String!, $schoolID: ID!)
-{
-  newSearch {
-    teachers(query: {text: $text, schoolID: $schoolID}) {
-      edges {
-        cursor
-        node {
-          id
-          firstName
-          lastName
-          school {
-            name
-            id
-          }
-        }
-      }
-    }
-  }
-}
-`;
-
-
-const getProfessorQuery = gql`
-query TeacherRatingsPageQuery(
-  $id: ID!
-) {
-  node(id: $id) {
-    ... on Teacher {
-      id
-      firstName
-      lastName
-      school {
-        name
-        id
-        city
-        state
-      }
-      avgDifficulty
-      avgRating
-      department
-      numRatings
-      legacyId
-      wouldTakeAgainPercent
-    }
-    id
-  }
-}
-`;
-
-// publicly available token, uOttawa school ID
+// using self-hosted cors proxy (not shown in the source code)
+const PROXY_URL = 'https://www.ratemyprofessors.com/graphql';
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
-const SCHOOL_ID = 'U2Nob29sLTE0NTI=';
+const HEADERS = {
+  "Content-Type": "application/json",
+  Authorization: `Basic ${AUTH_TOKEN}`,
+  "Sec-Fetch-Dest": "empty",
+  "Sec-Fetch-Mode": "cors",
+  "Sec-Fetch-Site": "same-origin",
+}
 
-const client = new GraphQLClient('https://www.ratemyprofessors.com/graphql', {
-  headers: {
-    authorization: `Basic ${AUTH_TOKEN}`
+// Search for profs at uOttawa
+const SCHOOL_IDS = [
+  "U2Nob29sLTE0NTI=",
+];
+
+const searchProfessor = async (name, schoolIDs) => {
+  for (const schoolID of schoolIDs) {
+    const response = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: HEADERS,
+      body: JSON.stringify({
+        query: `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
+          newSearch {
+            teachers(query: {text: $text, schoolID: $schoolID}) {
+              edges {
+                cursor
+                node {
+                  id
+                  firstName
+                  lastName
+                  school {
+                    name
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }`,
+        variables: {
+          text: name,
+          schoolID,
+        },
+      }),
+    });
+    const json = await response.json();
+    if (json.data.newSearch.teachers.edges.length > 0) {
+      return json.data.newSearch.teachers.edges.map((edge) => edge.node);
+    }
   }
-});
-
-const searchProfessor = async (name, schoolID) => {
-  const response = await client.request(searchProfessorQuery, {
-    text: name,
-    schoolID
-  });
-
-  if (response.newSearch.teachers === null) {
-    return [];
-  }
-
-  return response.newSearch.teachers.edges.map((edge) => edge.node);
+  return [];
 };
 
 const getProfessor = async (id) => {
-  const response = await client.request(getProfessorQuery, { id });
-  return response.node;
+  const response = await fetch(PROXY_URL, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({
+      query: `query TeacherRatingsPageQuery($id: ID!) {
+        node(id: $id) {
+          ... on Teacher {
+            id
+            firstName
+            lastName
+            school {
+              name
+              id
+              city
+              state
+            }
+            avgDifficulty
+            avgRating
+            department
+            numRatings
+            legacyId
+            wouldTakeAgainPercent
+          }
+          id
+        }
+      }`,
+      variables: {
+        id,
+      },
+    }),
+  });
+  const json = await response.json();
+  return json.data.node;
 };
 
 async function sendProfessorInfo(professorName) {
-  const isProxyReachable = await checkProxyReachability();
-  if (!isProxyReachable) {
-    return { error: `Can't connect to the proxy server, please bug me <a href="${BUG_REPORT_URL}" target="_blank">here</a>.` };
-  }
-
   const normalizedName = professorName.normalize("NFKD");
   const professors = await searchProfessor(normalizedName, SCHOOL_IDS);
 
@@ -112,7 +119,6 @@ async function sendProfessorInfo(professorName) {
     return { error: "Professor not found" };
   }
 
-
   const professorID = professors[0].id;
   const professor = await getProfessor(professorID);
   return professor;
@@ -129,18 +135,3 @@ chrome.runtime.onConnect.addListener((port) => {
     });
   });
 });
-
-// if content script is loaded, show PageAction
-chrome.runtime.onMessage.addListener(
-  function (request, sender) {
-    if (request.active) {
-      chrome.pageAction.show(sender.tab.id);
-
-      // if pageAction is clicked, send message to content.js
-      chrome.pageAction.onClicked.addListener(function () {
-        chrome.tabs.sendMessage(sender.tab.id, { "clicked": true });
-      });
-
-    }
-  }
-);
