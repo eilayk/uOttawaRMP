@@ -16,10 +16,5 @@
   },
   "icons": {
     "128": "assets/icon128.png"
-  },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "ekats055@uottawa.ca"
-    }
   }
 }
