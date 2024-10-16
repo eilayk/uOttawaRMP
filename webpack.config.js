@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const DotenvPlugin = require('dotenv-webpack');
 module.exports = {
     entry: {
         content: './src/content/content.ts',
@@ -27,7 +28,8 @@ module.exports = {
                 { from: 'src/manifest.json', to: '' },
                 { from: 'src/assets', to: 'assets' }
             ]
-        })
+        }),
+        new DotenvPlugin(),
     ],
     devtool: 'source-map', // Enable source maps for better readability
 };

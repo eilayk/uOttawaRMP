@@ -1,13 +1,15 @@
 import { Professor, ProfessorQueryResponse, SearchProfessor, SearchProfessorQueryResponse } from "../models";
 import { buildGetProfessorQuery, buildSearchProfessorQuery } from "./queries";
 
-// need to use a CORS proxy to access the RateMyProfessors API
 const URL = 'https://www.ratemyprofessors.com/graphql';
+
+// need to use a CORS proxy to access the RateMyProfessors API
+const PROXIED_URL = `${process.env.CORS_PROXY || ''}${URL}`;
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
 const SCHOOL_ID = 'U2Nob29sLTE0NTI=';
 
 const buildFetchRequest = (body: String) => {
-    return fetch(URL, {
+    return fetch(PROXIED_URL, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
