@@ -1,6 +1,14 @@
 {
+  "scripts":{
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
+  },
   "dependencies": {
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.278",
+    "typescript": "^5.6.3"
   }
 }
