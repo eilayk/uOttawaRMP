@@ -3,6 +3,7 @@ import { Professor, ProfessorQueryResponse, SearchProfessor, SearchProfessorQuer
 // need to use a CORS proxy to access the RateMyProfessors API
 const URL = 'https://www.ratemyprofessors.com/graphql';
 const AUTH_TOKEN = 'dGVzdDp0ZXN0';
+const SCHOOL_ID = 'U2Nob29sLTE0NTI=';
 
 const buildFetchRequest = (body: String) => {
     return fetch(URL, {
@@ -15,8 +16,8 @@ const buildFetchRequest = (body: String) => {
     })
 }
 
-const searchProfessors = async (name: string, schoolId: string): Promise<SearchProfessor[]> => {
-   const response = await buildFetchRequest(buildSearchProfessorQuery(name, schoolId));
+export const searchProfessors = async (name: string): Promise<SearchProfessor[]> => {
+   const response = await buildFetchRequest(buildSearchProfessorQuery(name, SCHOOL_ID));
    if (!response.ok) {
        throw new Error('Failed to fetch professors');
    }
@@ -24,7 +25,7 @@ const searchProfessors = async (name: string, schoolId: string): Promise<SearchP
    return data.newSearch.teachers.edges.map((teacher) => teacher.node);
 }
 
-const getProfessor = async (profId: string): Promise<Professor> => {
+export const getProfessor = async (profId: string): Promise<Professor> => {
     const response = await buildFetchRequest(buildGetProfessorQuery(profId));
     if (!response.ok) {
         throw new Error('Failed to fetch professor');
