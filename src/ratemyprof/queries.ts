@@ -1,4 +1,4 @@
-const buildSearchProfessorQuery = (name: string, schoolId: string) => 
+export const buildSearchProfessorQuery = (name: string, schoolId: string) => 
     `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
         newSearch {
             teachers(query: {text: ${name}, schoolID: ${schoolId}}) {
@@ -18,7 +18,7 @@ const buildSearchProfessorQuery = (name: string, schoolId: string) =>
         }
     }`
 
-const buildGetProfessorQuery = (profId: string) => 
+export const buildGetProfessorQuery = (profId: string) => 
     `query TeacherRatingsPageQuery($id: ID!) {
         node(id: ${profId}) {
             ... on Teacher {

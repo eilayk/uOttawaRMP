@@ -40,3 +40,11 @@ export type Professor = {
     legacyId: string;
     wouldTakeAgainPercent: number;
 }
+
+export type RequestProfessorMessage = {
+    professorName: string;
+}
+
+export type Error = {
+    errorMessage: string;
+}

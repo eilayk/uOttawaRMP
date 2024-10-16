@@ -1,4 +1,4 @@
-import { Professor } from "../models";
+import { Professor, RequestProfessorMessage } from "../models";
 
 export const populateProfessors = (parent: Document, id: String) => {
     // TODO: cache professors to avoid multiple requests
@@ -19,18 +19,23 @@ export const handleProfessorInfo = (element: Element, name: string) => {
         return;
     }
 
-    const port = chrome.runtime.connect({ name: "professor-rating" });
-    port.postMessage({ professorName: name });
-    port.onMessage.addListener((professor: Professor) => {
-        if (professor.wouldTakeAgainPercent === -1) {
-            insertNoRatingsError(element, professor.legacyId);
-        }
-        insertNumRatings(element, professor.numRatings, professor.legacyId);
-        insertWouldTakeAgainPercent(element, professor.wouldTakeAgainPercent);
-        insertAvgDifficulty(element, professor.avgDifficulty);
-        insertRating(element, professor.avgRating);
+    const message: RequestProfessorMessage = { professorName: name };
+    chrome.runtime.sendMessage(message, response => {
+        console.log('recieved response', response);
     });
 }
+//     const port = chrome.runtime.connect({ name: "professor-rating" });
+//     port.postMessage({ professorName: name });
+//     port.onMessage.addListener((professor: Professor) => {
+//         if (professor.wouldTakeAgainPercent === -1) {
+//             insertNoRatingsError(element, professor.legacyId);
+//         }
+//         insertNumRatings(element, professor.numRatings, professor.legacyId);
+//         insertWouldTakeAgainPercent(element, professor.wouldTakeAgainPercent);
+//         insertAvgDifficulty(element, professor.avgDifficulty);
+//         insertRating(element, professor.avgRating);
+//     });
+// }
 
 function insertRating(link, avgRating) {
     link.insertAdjacentHTML(

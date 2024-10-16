@@ -1,4 +1,5 @@
 import { Professor, ProfessorQueryResponse, SearchProfessor, SearchProfessorQueryResponse } from "../models";
+import { buildGetProfessorQuery, buildSearchProfessorQuery } from "./queries";
 
 // need to use a CORS proxy to access the RateMyProfessors API
 const URL = 'https://www.ratemyprofessors.com/graphql';

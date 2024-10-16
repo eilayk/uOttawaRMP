@@ -1,3 +1,4 @@
+import { RequestProfessorMessage } from "./models";
 import { searchProfessors } from "./ratemyprof/api";
 
 // Listen for extension click
@@ -34,13 +35,9 @@ const getProfessor = async (name: string) => {
 }
 
 // Listen for message from content script
-chrome.runtime.onMessage.addListener(port => {
-    port.onMessage.addListener(request => {
-        getProfessor(request.professorName).then(professor => {
-            port.postMessage(professor);
-        }).catch(error => {
-            // TODO: improve error handling
-            console.log("error", error);
-        });
-    });
+chrome.runtime.onMessage.addListener(async (message: RequestProfessorMessage, sender, sendResponse) => {
+    console.log("message", message);
+    const professor = await getProfessor(message.professorName);
+    console.log("professor", professor);
+    sendResponse(professor);
 });
