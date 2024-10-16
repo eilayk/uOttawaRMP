@@ -2,12 +2,12 @@
   "manifest_version": 3,
   "name": "uOttawaRMP",
   "description": "RMP extension for uOttawa's course page.",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "action": {
     "default_title": "Search RateMyProf"
   },
   "permissions": [
-    "activeTab", "scripting"
+    "activeTab", "scripting", "declarativeContent"
   ],
   "optional_permissions": ["webNavigation", "tabs"],
   "background": {
