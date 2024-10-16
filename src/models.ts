@@ -1,11 +1,13 @@
 export type SearchProfessorQueryResponse = {
-    newSearch: {
-        teachers: {
-            edges: {
-                cursor: string;
-                node: SearchProfessor;
-            }[];
-        };
+    data: {
+        newSearch: {
+            teachers: {
+                edges: {
+                    cursor: string;
+                    node: SearchProfessor;
+                }[];
+            };
+        }
     }
 }
 
@@ -20,7 +22,9 @@ export type SearchProfessor = {
 }
 
 export type ProfessorQueryResponse = {
-    node: Professor;
+    data: {
+        node: Professor;
+    }
 }
 
 export type Professor = {
@@ -45,6 +49,16 @@ export type RequestProfessorMessage = {
     professorName: string;
 }
 
-export type Error = {
+export type RequestProfessorResponse = {
+    professor: Professor | null;
+    error: ErrorResponse | null;
+}
+
+export type ErrorResponse = {
     errorMessage: string;
+}
+
+export enum NonProfessor {
+    "To be Announced",
+    "Staff"
 }

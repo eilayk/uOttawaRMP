@@ -7,7 +7,7 @@
     "default_title": "Search RateMyProf"
   },
   "permissions": [
-    "activeTab", "scripting"
+    "activeTab", "scripting", "declarativeContent"
   ],
   "optional_permissions": ["webNavigation", "tabs"],
   "background": {

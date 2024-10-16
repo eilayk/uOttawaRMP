@@ -1,78 +1,98 @@
-import { Professor, RequestProfessorMessage } from "../models";
+import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from "../models";
 
-export const populateProfessors = (parent: Document, id: String) => {
-    // TODO: cache professors to avoid multiple requests
+export const populateProfessors = async (parent: Document, id: String) => {
+    // cache professors 
+    const professorMap = new Map<string, RequestProfessorResponse>();
+
     let count = 0;
-  
     let currElement = parent.getElementById(id + count.toString());
     while (currElement != null) {
-      if (currElement.textContent != 'Staff') {
-        handleProfessorInfo(currElement, currElement.textContent);
-      }
-      count++;
-      currElement = parent.getElementById(id + count.toString());
+        const professorName = currElement.textContent;
+        if (!Object.values(NonProfessor).includes(professorName)) {
+            await handleProfessorInfo(professorName, currElement, professorMap);
+        }
+        count++;
+        currElement = parent.getElementById(id + count.toString());
     }
-  }
+}
 
-export const handleProfessorInfo = (element: Element, name: string) => {
-    if (!/[a-zA-Z]/.test(name)) {
+const handleProfessorInfo = async (professorName: string, element: HTMLElement, professorMap: Map<string, RequestProfessorResponse>) => {
+    if (professorMap.has(professorName)) {
+        addProfessorRatingToPage(professorMap.get(element.textContent), element);
+    } else {
+        if (!/[a-zA-Z]/.test(professorName)) {
+            return;
+        }
+        const message: RequestProfessorMessage = { professorName };
+        const response: RequestProfessorResponse = await chrome.runtime.sendMessage(message);
+        addProfessorRatingToPage(response, element);
+        professorMap.set(professorName, response);
+    }
+}
+
+const addProfessorRatingToPage = (professorResponse: RequestProfessorResponse, element: HTMLElement) => {
+    if (professorResponse.error) {
+        insertError(element, professorResponse.error.errorMessage);
+        return;
+    }
+    const professor = professorResponse.professor;
+    if (!professor) {
+        insertNoProfError(element);
         return;
     }
 
-    const message: RequestProfessorMessage = { professorName: name };
-    chrome.runtime.sendMessage(message, response => {
-        console.log('recieved response', response);
-    });
+    if (professor.wouldTakeAgainPercent === -1) {
+        insertNoRatingsError(element, professor.legacyId);
+    }
+    insertNumRatings(element, professor.numRatings, professor.legacyId);
+    insertWouldTakeAgainPercent(element, professor.wouldTakeAgainPercent);
+    insertAvgDifficulty(element, professor.avgDifficulty);
+    insertRating(element, professor.avgRating);
 }
-//     const port = chrome.runtime.connect({ name: "professor-rating" });
-//     port.postMessage({ professorName: name });
-//     port.onMessage.addListener((professor: Professor) => {
-//         if (professor.wouldTakeAgainPercent === -1) {
-//             insertNoRatingsError(element, professor.legacyId);
-//         }
-//         insertNumRatings(element, professor.numRatings, professor.legacyId);
-//         insertWouldTakeAgainPercent(element, professor.wouldTakeAgainPercent);
-//         insertAvgDifficulty(element, professor.avgDifficulty);
-//         insertRating(element, professor.avgRating);
-//     });
-// }
 
-function insertRating(link, avgRating) {
+function insertRating(link: HTMLElement, avgRating: string) {
     link.insertAdjacentHTML(
-      "afterend",
-      `<div class="rating"><b>Rating:</b> ${avgRating}/5</div>`
+        "afterend",
+        `<div class="rating"><b>Rating:</b> ${avgRating}/5</div>`
     );
 }
 
-function insertAvgDifficulty(link, avgDifficulty) {
+function insertAvgDifficulty(link: HTMLElement, avgDifficulty: string) {
     link.insertAdjacentHTML(
-      "afterend",
-      `<div><b>Difficulty:</b> ${avgDifficulty}/5</div>`
+        "afterend",
+        `<div><b>Difficulty:</b> ${avgDifficulty}/5</div>`
     );
 }
 
-function insertWouldTakeAgainPercent(link, wouldTakeAgainPercent) {
+function insertWouldTakeAgainPercent(link: HTMLElement, wouldTakeAgainPercent: number) {
     link.insertAdjacentHTML(
-      "afterend",
-      `<div class="rating"><b>${wouldTakeAgainPercent}%</b> of students would take this professor again.</div>`
+        "afterend",
+        `<div class="rating"><b>${wouldTakeAgainPercent}%</b> of students would take this professor again.</div>`
     );
 }
 
-function insertNumRatings(link, numRatings, legacyId) {
+function insertNumRatings(link: HTMLElement, numRatings: string, legacyId: string) {
     const profLink = `<a href='https://www.ratemyprofessors.com/professor?tid=${legacyId}'>${numRatings} ratings</a>`;
     link.insertAdjacentHTML("afterend", `<div>${profLink}</div>`);
 }
 
-function insertNoRatingsError(link, legacyId) {
+function insertNoRatingsError(link: HTMLElement, legacyId: string) {
     link.insertAdjacentHTML(
-      "afterend",
-      `<div class="rating"><b>Error:</b> this professor has <a href='https://www.ratemyprofessors.com/professor?tid=${legacyId}'>no ratings on RateMyProfessors.</a></div>`
+        "afterend",
+        `<div class="rating"><b>Error:</b> this professor has <a href='https://www.ratemyprofessors.com/professor?tid=${legacyId}'>no ratings on RateMyProfessors.</a></div>`
     );
 }
-  
-function insertNoProfError(link) {
+
+function insertNoProfError(link: HTMLElement) {
     link.insertAdjacentHTML(
-      "afterend",
-      `<div class="rating"><b>Error:</b> this professor is not registered on RateMyProfessors.</div>`
+        "afterend",
+        `<div class="rating"><b>Error:</b> this professor is not registered on RateMyProfessors.</div>`
+    );
+}
+
+function insertError(link: HTMLElement, error: string) {
+    link.insertAdjacentHTML(
+        "afterend",
+        `<div class="rating"><b>Error:</b> ${error}</div>`
     );
 }

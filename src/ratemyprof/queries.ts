@@ -1,7 +1,7 @@
-export const buildSearchProfessorQuery = (name: string, schoolId: string) => 
+const searchProfessorQuery = 
     `query NewSearchTeachersQuery($text: String!, $schoolID: ID!) {
         newSearch {
-            teachers(query: {text: ${name}, schoolID: ${schoolId}}) {
+            teachers(query: {text: $text, schoolID: $schoolID}) {
                 edges {
                     cursor
                     node {
@@ -16,11 +16,11 @@ export const buildSearchProfessorQuery = (name: string, schoolId: string) =>
                 }
             }
         }
-    }`
+    }`;
 
-export const buildGetProfessorQuery = (profId: string) => 
+const getProfessorQuery =
     `query TeacherRatingsPageQuery($id: ID!) {
-        node(id: ${profId}) {
+        node(id: $id) {
             ... on Teacher {
                 id
                 firstName
@@ -38,6 +38,22 @@ export const buildGetProfessorQuery = (profId: string) =>
                 legacyId
                 wouldTakeAgainPercent
             }
-            id
+          id
         }
-}`
+    }`
+
+export const buildSearchProfessorQuery = (name: string, schoolId: string) => JSON.stringify({ 
+    query: searchProfessorQuery, 
+    variables: { 
+        text: name, 
+        schoolID: schoolId 
+    } 
+});
+
+export const buildGetProfessorQuery = (profId: string) => JSON.stringify({
+    query: getProfessorQuery,
+    variables: {
+        id: profId
+    }
+});
+

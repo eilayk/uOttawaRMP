@@ -4,7 +4,7 @@ const DotenvPlugin = require('dotenv-webpack');
 module.exports = {
     entry: {
         content: './src/content/content.ts',
-        background: './src/background.ts'
+        background: './src/background/background.ts'
     },
     output: {
         filename: '[name].js',
