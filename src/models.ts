@@ -38,5 +38,5 @@ export type Professor = {
     department: string;
     numRatings: string;
     legacyId: string;
-    wouldTakeAgainPercent: string;
+    wouldTakeAgainPercent: number;
 }
