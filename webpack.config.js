@@ -28,5 +28,6 @@ module.exports = {
                 { from: 'src/assets', to: 'assets' }
             ]
         })
-    ]
+    ],
+    devtool: 'source-map', // Enable source maps for better readability
 };
