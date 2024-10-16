@@ -1,4 +1,4 @@
-import { populateProfessors } from "./helper";
+import { populateProfessors } from "../common/content";
 
 // select iframe that displays class info
 const iframe = document.querySelector('iframe').contentWindow.document;

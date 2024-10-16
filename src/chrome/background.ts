@@ -1,5 +1,5 @@
-import { RequestProfessorMessage } from "../models";
-import { getProfessorFromRmp } from "./helper";
+import { RequestProfessorMessage } from "../common/models";
+import { getProfessorFromRmp } from "../common/background";
 
 // https://developer.chrome.com/docs/extensions/reference/api/declarativeContent
 // use declarative content api to ensure action is only active on on the course selection portal

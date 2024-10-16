@@ -1,10 +1,10 @@
-import { ErrorResponse, Professor, RequestProfessorResponse } from "../models";
-import { getProfessor, searchProfessors } from "../ratemyprof/api";
+import { RequestProfessorResponse } from "./models";
+import { getProfessor, searchProfessors } from "./ratemyprof/api";
 
 type ProfId = string;
 
 // initial search, if no results, try modified search
-const attemptInitialSearch  = async (name: string): Promise<ProfId | null> => {
+const attemptInitialSearch = async (name: string): Promise<ProfId | null> => {
     const professors = await searchProfessors(name);
     if (professors.length === 0) {
         return null;

@@ -20,12 +20,12 @@ const buildFetchRequest = (body: string) => {
 }
 
 export const searchProfessors = async (name: string): Promise<SearchProfessor[]> => {
-   const response = await buildFetchRequest(buildSearchProfessorQuery(name, SCHOOL_ID));
-   if (!response.ok) {
-       throw new Error('Fetching from RateMyProf failed');
-   }
-   const json: SearchProfessorQueryResponse = await response.json();
-   return json.data.newSearch.teachers.edges.map((teacher) => teacher.node);
+    const response = await buildFetchRequest(buildSearchProfessorQuery(name, SCHOOL_ID));
+    if (!response.ok) {
+        throw new Error('Fetching from RateMyProf failed');
+    }
+    const json: SearchProfessorQueryResponse = await response.json();
+    return json.data.newSearch.teachers.edges.map((teacher) => teacher.node);
 }
 
 export const getProfessor = async (profId: string): Promise<Professor> => {

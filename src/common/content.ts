@@ -1,4 +1,4 @@
-import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from "../models";
+import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from "./models";
 
 export const populateProfessors = async (parent: Document, id: String) => {
     // cache professors 
