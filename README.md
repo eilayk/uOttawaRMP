@@ -9,7 +9,7 @@ Pulls data from the Rate My Professors GraphQL API (https://www.ratemyprofessors
 The extension works as an action. To activate it, simply click the icon from your browser's extension menu. The action is only enabled on the uOttawa course portal.
 
 The extension displays the professor's RMP rating, average difficulty, percentage of students that would take again, and the number of ratings with a hyperlink to the prof's RMP page.
-![Extension demo](https://imgur.com/a/b9kZ8tR)
+![Extension demo](https://i.imgur.com/zcRRWK6.png)
 
 ## CORS
 This extension requires a CORS proxy to function since RateMyProf does not return CORS headers. The packaged builds in the Releases page include a self-hosted proxy.
