@@ -1,6 +1,8 @@
 import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from "./models";
 
-export const runContentScript = () => {
+type MessageHandler = (message: RequestProfessorMessage) => Promise<RequestProfessorResponse>;
+
+export const runContentScript = (messageHandler: MessageHandler) => {
     // select iframe that displays class info
     const iframe = document.querySelector('iframe').contentWindow.document;
 
@@ -13,12 +15,12 @@ export const runContentScript = () => {
     iframe.head.appendChild(style);
 
     // if viewing in schedule
-    populateProfessors(iframe, "DERIVED_CLS_DTL_SSR_INSTR_LONG$");
+    populateProfessors(iframe, "DERIVED_CLS_DTL_SSR_INSTR_LONG$", messageHandler);
     // if viewing in course selector
-    populateProfessors(iframe, "MTG_INSTR$");
+    populateProfessors(iframe, "MTG_INSTR$", messageHandler);
 }
 
-export const populateProfessors = async (parent: Document, id: String) => {
+export const populateProfessors = async (parent: Document, id: String, messageHandler: MessageHandler) => {
     // cache professors 
     const professorMap = new Map<string, RequestProfessorResponse>();
 
@@ -27,14 +29,14 @@ export const populateProfessors = async (parent: Document, id: String) => {
     while (currElement != null) {
         const professorName = currElement.textContent;
         if (!Object.values(NonProfessor).includes(professorName)) {
-            await handleProfessorInfo(professorName, currElement, professorMap);
+            await handleProfessorInfo(professorName, currElement, professorMap, messageHandler);
         }
         count++;
         currElement = parent.getElementById(id + count.toString());
     }
 }
 
-const handleProfessorInfo = async (professorName: string, element: HTMLElement, professorMap: Map<string, RequestProfessorResponse>) => {
+const handleProfessorInfo = async (professorName: string, element: HTMLElement, professorMap: Map<string, RequestProfessorResponse>, messageHandler: MessageHandler) => {
     if (professorMap.has(professorName)) {
         addProfessorRatingToPage(professorMap.get(element.textContent), element);
     } else {
@@ -42,7 +44,8 @@ const handleProfessorInfo = async (professorName: string, element: HTMLElement, 
             return;
         }
         const message: RequestProfessorMessage = { professorName };
-        const response: RequestProfessorResponse = await chrome.runtime.sendMessage(message);
+        // const response: RequestProfessorResponse = await chrome.runtime.sendMessage(message);
+        const response: RequestProfessorResponse = await messageHandler(message);
         addProfessorRatingToPage(response, element);
         professorMap.set(professorName, response);
     }

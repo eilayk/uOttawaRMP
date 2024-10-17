@@ -1,3 +1,3 @@
 import { runContentScript } from "../common/content";
 
-runContentScript();
+runContentScript(browser.runtime.sendMessage);
