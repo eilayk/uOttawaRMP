@@ -36,8 +36,8 @@ module.exports = {
             patterns: [
                 { from: 'src/chrome/manifest.json', to: 'chrome' },
                 { from: 'src/firefox/manifest.json', to: 'firefox' },
-                { from: 'src/assets', to: 'chrome' },
-                { from: 'src/assets', to: 'firefox' }
+                { from: 'src/assets', to: 'chrome/assets' },
+                { from: 'src/assets', to: 'firefox/assets' }
             ]
         }),
         new DotenvPlugin(),

@@ -11,7 +11,7 @@
   ],
   "optional_permissions": ["webNavigation", "tabs"],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "icons": {
     "128": "assets/icon128.png"
