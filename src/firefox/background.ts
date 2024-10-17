@@ -1,22 +1,39 @@
 import { RequestProfessorMessage } from "../common/models";
 import { getProfessorFromRmp } from "../common/background";
 
-// Listen for extension click
-chrome.action.onClicked.addListener(tab => {
-    // check that tab.url is the course selection portal
-    if (!tab.url.includes('www.uocampus.uottawa.ca/psp/')) {
-        return;
+browser.runtime.onInstalled.addListener(() => {
+    // disable by default
+    browser.action.disable();
+});
+
+// use browser.webNavigation to enable action when on course selection portal
+browser.webNavigation.onDOMContentLoaded.addListener(
+    evt => {
+        // filter out child frames (i.e. iframes)
+        if (evt.frameId !== 0) {
+            return;
+        }
+        browser.action.enable(evt.tabId);
+    },
+    {
+        url: [
+            { hostEquals: 'www.uocampus.uottawa.ca', pathPrefix: '/psp/' }
+        ]
     }
 
+);
+
+// Listen for extension click
+browser.action.onClicked.addListener(tab => {
     // execute content script
-    chrome.scripting.executeScript({
+    browser.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['content.js']
     })
 })
 
 // Listen for message from content script
-chrome.runtime.onMessage.addListener((message: RequestProfessorMessage, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message: RequestProfessorMessage, sender, sendResponse) => {
     getProfessorFromRmp(message.professorName).then(professor => {
         sendResponse(professor);
     });
