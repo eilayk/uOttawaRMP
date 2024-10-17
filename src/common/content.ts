@@ -91,7 +91,7 @@ function insertWouldTakeAgainPercent(link: HTMLElement, wouldTakeAgainPercent: n
     );
 }
 
-function insertNumRatings(link: HTMLElement, numRatings: string, legacyId: string) {
+function insertNumRatings(link: HTMLElement, numRatings: number, legacyId: string) {
     const profLink = `<a href='https://www.ratemyprofessors.com/professor?tid=${legacyId}'>${numRatings} ratings</a>`;
     link.insertAdjacentHTML("afterend", `<div>${profLink}</div>`);
 }

@@ -32,15 +32,15 @@ export type Professor = {
     firstName: string;
     lastName: string;
     school: {
-      name: string;
-      id: string;
-      city: string;
-      state: string;
+        name: string;
+        id: string;
+        city: string;
+        state: string;
     };
     avgDifficulty: string;
     avgRating: string;
     department: string;
-    numRatings: string;
+    numRatings: number;
     legacyId: string;
     wouldTakeAgainPercent: number;
 }
