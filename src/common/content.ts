@@ -44,8 +44,7 @@ const handleProfessorInfo = async (professorName: string, element: HTMLElement, 
             return;
         }
         const message: RequestProfessorMessage = { professorName };
-        // const response: RequestProfessorResponse = await chrome.runtime.sendMessage(message);
-        const response: RequestProfessorResponse = await messageHandler(message);
+        const response = await messageHandler(message);
         addProfessorRatingToPage(response, element);
         professorMap.set(professorName, response);
     }
