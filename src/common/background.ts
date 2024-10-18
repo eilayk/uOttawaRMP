@@ -30,13 +30,13 @@ const getProfFromSearch = async (profName, searchResults: SearchProfessor[]): Pr
     const names = profName.split(" ");
     const [profFirstName, profLastName] = [names[0], names[names.length - 1]];
     // check that first and last name are an exact match
-    searchResults = searchResults.filter(({ firstName, lastName }) => profFirstName === firstName && profLastName === lastName);
-    // if only one result, return it
-    if (searchResults.length == 1) {
+    const filteredSearchResults = searchResults.filter(({ firstName, lastName }) => profFirstName === firstName && profLastName === lastName);
+    // if no results (sometimes names can be misspelled), return the first result from the original query
+    if (filteredSearchResults.length == 0) {
         const prof = await getProfessor(searchResults[0].id);
-        return prof;
+        return prof
     }
-    // if multiple results, return the one with the most rankings
+    // return the result with most ratings
     let maxRatings = -1;
     let maxProf = null;
     for (const prof of searchResults) {
