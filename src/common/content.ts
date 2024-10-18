@@ -88,7 +88,7 @@ function insertAvgDifficulty(link: HTMLElement, avgDifficulty: string) {
 function insertWouldTakeAgainPercent(link: HTMLElement, wouldTakeAgainPercent: number) {
     link.insertAdjacentHTML(
         "afterend",
-        `<div class="rating"><b>${wouldTakeAgainPercent}%</b> of students would take this professor again.</div>`
+        `<div class="rating"><b>${Math.round(wouldTakeAgainPercent)}%</b> of students would take this professor again.</div>`
     );
 }
 
