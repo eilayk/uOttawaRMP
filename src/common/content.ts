@@ -63,6 +63,7 @@ const addProfessorRatingToPage = (professorResponse: RequestProfessorResponse, e
 
     if (professor.wouldTakeAgainPercent === -1) {
         insertNoRatingsError(element, professor.legacyId);
+        return;
     }
     insertNumRatings(element, professor.numRatings, professor.legacyId);
     insertWouldTakeAgainPercent(element, professor.wouldTakeAgainPercent);
