@@ -2,7 +2,21 @@ import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from 
 
 type MessageHandler = (message: RequestProfessorMessage) => Promise<RequestProfessorResponse>;
 
+declare global { interface Window { hasRunContentScript: boolean; } }
+
 export const runContentScript = (messageHandler: MessageHandler) => {
+    // Check if the script has already been run
+	if (window.hasRunContentScript) {
+		return;
+	}
+	// Set the flag to indicate that the script is running
+	window.hasRunContentScript = true;
+
+	// Reset the flag after 5 seconds to allow the script to run again
+	setTimeout(() => {
+		window.hasRunContentScript = false;
+	}, 5000);
+
     // select iframe that displays class info
     const iframe = document.querySelector('iframe').contentWindow.document;
 
