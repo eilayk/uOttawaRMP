@@ -2,8 +2,6 @@ import { NonProfessor, RequestProfessorMessage, RequestProfessorResponse } from 
 
 type MessageHandler = (message: RequestProfessorMessage) => Promise<RequestProfessorResponse>;
 
-declare global { interface Window { hasRunContentScript: boolean; } }
-
 export const runContentScript = (messageHandler: MessageHandler) => {
     // select iframe that displays class info
     const iframe = document.querySelector('iframe').contentWindow.document;
