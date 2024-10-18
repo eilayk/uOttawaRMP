@@ -25,6 +25,13 @@ chrome.runtime.onInstalled.addListener(details => {
 
 // Listen for extension click
 chrome.action.onClicked.addListener(tab => {
+    // disable action when clicked
+    chrome.action.disable(tab.id);
+    // re-enable action after 5 seconds
+    setTimeout(() => {
+        chrome.action.enable(tab.id);
+    }, 5000);
+
     // execute content script
     chrome.scripting.executeScript({
         target: { tabId: tab.id },

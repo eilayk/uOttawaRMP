@@ -25,6 +25,13 @@ browser.webNavigation.onDOMContentLoaded.addListener(
 
 // Listen for extension click
 browser.action.onClicked.addListener(tab => {
+    // disable action when clicked
+    browser.action.disable(tab.id);
+    // re-enable action after 5 seconds
+    setTimeout(() => {
+        browser.action.enable(tab.id);
+    }, 5000);
+
     // execute content script
     browser.scripting.executeScript({
         target: { tabId: tab.id },
