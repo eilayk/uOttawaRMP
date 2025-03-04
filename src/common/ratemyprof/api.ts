@@ -12,7 +12,6 @@ const buildFetchRequest = (body: string) => {
     return fetch(PROXIED_URL, {
         method: 'POST',
         headers: {
-            "Content-Type": "application/json",
             "Authorization": `Basic ${AUTH_TOKEN}`
         },
         body: body

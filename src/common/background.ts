@@ -5,7 +5,6 @@ import { getProfessor, searchProfessors } from "./ratemyprof/api";
 const attemptInitialSearch = async (name: string): Promise<SearchProfessor[]> => {
     const professors = await searchProfessors(name);
     return professors;
-
 }
 
 // modified search, try to search with only first and last name
